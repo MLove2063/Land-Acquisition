@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gulf Coast Ecosystem Restoration Council - Land Acquisition Portal</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #f0f4f8; color: #1e293b; padding: 20px; line-height: 1.5; }
+        
+        .header { background: linear-gradient(135deg, #0f4c81 0%, #1e3a8a 100%); color: white; padding: 20px 24px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(15,76,129,0.15); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.3rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .header .sub { font-size: 0.85rem; opacity: 0.9; margin-top: 4px; }
+        .header .user-badge { background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(255,255,255,0.25); }
+
+        /* Reference Bar */
+        .ref-bar { background: #e0f2fe; border: 1px solid #bae6fd; color: #0369a1; padding: 12px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 0.825rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+        .ref-bar strong { font-weight: 700; color: #0284c7; }
+        .ref-links { display: flex; gap: 12px; flex-wrap: wrap; }
+        .ref-link { color: #0284c7; font-weight: 600; text-decoration: none; background: white; padding: 4px 10px; border-radius: 6px; border: 1px solid #7dd3fc; transition: all 0.15s ease; }
+        .ref-link:hover { background: #0284c7; color: white; }
+
+        /* KPI Dashboard Row */
+        .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+        .kpi-card { background: white; padding: 16px 20px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .kpi-card .label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; }
+        .kpi-card .value { font-size: 1.5rem; font-weight: 800; color: #0f4c81; margin-top: 4px; }
+        .kpi-card .desc { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
+
+        /* Main Grid Layout */
+        .main-layout { display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
+
+        /* Sidebar Parcel List */
+        .sidebar { background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .sidebar-title { padding: 16px 20px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; font-weight: 700; color: #334155; }
+        .search-input { width: calc(100% - 32px); margin: 12px 16px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; outline: none; }
+        .search-input:focus { border-color: #0f4c81; box-shadow: 0 0 0 2px rgba(15,76,129,0.1); }
+        .parcel-list-scroll { max-height: 620px; overflow-y: auto; }
+        
+        .parcel-item { padding: 14px 18px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: all 0.15s ease; }
+        .parcel-item:hover { background-color: #f8fafc; }
+        .parcel-item.selected { background-color: #eff6ff; border-left: 4px solid #0f4c81; }
+        .parcel-item .fain { font-size: 0.75rem; font-weight: 700; color: #0f4c81; }
+        .parcel-item .title { font-size: 0.88rem; font-weight: 600; color: #1e293b; margin: 3px 0; line-height: 1.3; }
+        .parcel-item .sub-info { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+        .parcel-item .recipient { font-size: 0.75rem; color: #64748b; font-weight: 500; }
+        
+        /* Status Badges */
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+        .badge-active { background: #dbeafe; color: #1e40af; }
+        .badge-pending { background: #fef3c7; color: #92400e; }
+        .badge-complete { background: #dcfce7; color: #166534; }
+        .badge-cancelled { background: #fee2e2; color: #991b1b; }
+
+        /* Workspace Content Area */
+        .workspace { display: flex; flex-direction: column; gap: 20px; }
+        
+        /* Parcel Banner Card */
+        .parcel-card { background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .parcel-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
+        .parcel-card-header h2 { font-size: 1.25rem; font-weight: 700; color: #0f172a; line-height: 1.25; }
+        .parcel-card-header .fain-tag { font-size: 0.85rem; font-weight: 700; color: #0f4c81; margin-top: 4px; }
+        
+        .meta-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .meta-item .lbl { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #64748b; }
+        .meta-item .val { font-size: 0.9rem; font-weight: 700; color: #0f172a; margin-top: 2px; }
+
+        /* Tabbed Interface */
+        .tab-container { background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .tab-bar { display: flex; background: #f8fafc; border-bottom: 1px solid #e2e8f0; overflow-x: auto; }
+        .tab-btn { padding: 12px 18px; font-size: 0.825rem; font-weight: 600; color: #64748b; border: none; background: transparent; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; transition: all 0.2s; }
+        .tab-btn:hover { color: #0f4c81; background: #f1f5f9; }
+        .tab-btn.active { color: #0f4c81; border-bottom-color: #0f4c81; background: white; font-weight: 700; }
+        
+        .tab-pane { padding: 20px; display: none; }
+        .tab-pane.active { display: block; }
+
+        /* Compliance Checklist Cards */
+        .section-heading { font-size: 0.95rem; font-weight: 700; color: #0f4c81; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+        .checklist-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+        
+        .checklist-card { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; position: relative; }
+        .checklist-card h4 { font-size: 0.875rem; font-weight: 700; color: #1e293b; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .ref-badge { font-size: 0.7rem; font-weight: 600; color: #0f4c81; background: #eff6ff; padding: 2px 8px; border-radius: 4px; text-decoration: none; border: 1px solid #bfdbfe; }
+        .ref-badge:hover { background: #0f4c81; color: white; }
+
+        .checklist-card .help-box { font-size: 0.78rem; color: #334155; background: #f8fafc; padding: 10px 12px; border-radius: 6px; margin: 8px 0 12px 0; border-left: 3px solid #0f4c81; line-height: 1.4; }
+        .checklist-card select { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; font-weight: 600; color: #0f172a; background: white; }
+
+        /* Educational Reference Library Box */
+        .reference-library { background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 8px; padding: 16px; margin-top: 16px; }
+        .reference-library h5 { font-size: 0.85rem; font-weight: 700; color: #6b21a8; margin-bottom: 8px; }
+        .reference-library ul { list-style-type: none; padding-left: 0; }
+        .reference-library li { font-size: 0.78rem; color: #581c87; margin-bottom: 6px; line-height: 1.4; }
+        .reference-library li a { color: #7e22ce; font-weight: 700; text-decoration: underline; }
+
+        /* Log / Notes Feed */
+        .log-container { display: flex; flex-direction: column; gap: 12px; }
+        .log-entry { background: #f8fafc; border-left: 4px solid #0f4c81; padding: 14px; border-radius: 0 8px 8px 0; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
+        .log-entry .time { font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 4px; text-transform: uppercase; }
+        .log-entry .text { font-size: 0.85rem; color: #334155; white-space: pre-wrap; line-height: 1.45; }
+    </style>
+</head>
+<body>
+
+    <!-- Header Banner -->
+    <div class="header">
+        <div>
+            <h1>RESTORE Council — Land Acquisition Portal</h1>
+            <div class="sub">Integrated Yellow Book Due Diligence & SF-429 Requirements Tracker</div>
+        </div>
+        <div class="user-badge">Role: GMS / PSL Specialist</div>
+    </div>
+
+    <!-- Federal Regulations Quick Reference Bar -->
+    <div class="ref-bar">
+        <div><strong>📚 Federal Staff Reference Library:</strong> Direct links to official regulations & policy guidance</div>
+        <div class="ref-links">
+            <a href="https://www.ecfr.gov/current/title-2/subtitle-A/chapter-II/part-200/subpart-D/subject-group-ECFR8002a0e41f7131b/section-200.311" target="_blank" class="ref-link">2 CFR 200.311 (Real Property)</a>
+            <a href="https://www.appraisalinstitute.org/yellow-book" target="_blank" class="ref-link">Yellow Book (UASFLA Rules)</a>
+            <a href="https://www.fhwa.dot.gov/real_estate/uniform_act/" target="_blank" class="ref-link">49 CFR Part 24 (URA Guidelines)</a>
+            <a href="https://www.gsa.gov/forms-library/real-property-status-report" target="_blank" class="ref-link">SF-429 Form Set</a>
+            <a href="https://www.ecfr.gov/current/title-31/subtitle-A/part-34" target="_blank" class="ref-link">31 CFR Part 34 (RESTORE Act)</a>
+        </div>
+    </div>
+
+    <!-- Executive KPI Row -->
+    <div class="kpi-row">
+        <div class="kpi-card">
+            <div class="label">Total Active Tracts</div>
+            <div class="value">3</div>
+            <div class="desc">Under pre-closing due diligence</div>
+        </div>
+        <div class="kpi-card">
+            <div class="label">Pending Desk Review</div>
+            <div class="value">3</div>
+            <div class="desc">Post-closing drawdown verification</div>
+        </div>
+        <div class="kpi-card">
+            <div class="label">Completed Closings</div>
+            <div class="value">6</div>
+            <div class="desc">Desk review complete & cleared</div>
+        </div>
+        <div class="kpi-card">
+            <div class="label">Total Acquisition Spend</div>
+            <div class="value">$11.4M</div>
+            <div class="desc">Across active & closed tracts</div>
+        </div>
+    </div>
+
+    <!-- Main Workspace Layout -->
+    <div class="main-layout">
+        
+        <!-- Sidebar Selector -->
+        <div class="sidebar">
+            <div class="sidebar-title">All Land Tracts (13)</div>
+            <input type="text" id="search-box" class="search-input" placeholder="Search FAIN, Tract, Recipient..." onkeyup="filterParcels()">
+            <div class="parcel-list-scroll" id="parcel-list"></div>
+        </div>
+
+        <!-- Right Detail Workspace -->
+        <div class="workspace">
+            
+            <!-- Parcel Banner Card -->
+            <div class="parcel-card">
+                <div class="parcel-card-header">
+                    <div>
+                        <h2 id="det-title">Select a Tract</h2>
+                        <div class="fain-tag" id="det-fain">FAIN: -</div>
+                    </div>
+                    <div id="det-badge"></div>
+                </div>
+
+                <div class="meta-grid">
+                    <div class="meta-item">
+                        <div class="lbl">Grant Recipient</div>
+                        <div class="val" id="det-recipient">-</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="lbl">GMS Lead / PSL Lead</div>
+                        <div class="val" id="det-staff">-</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="lbl">Property Cost</div>
+                        <div class="val" id="det-cost">-</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="lbl">Award Amount / Close Date</div>
+                        <div class="val" id="det-award">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabbed Workflow Interface -->
+            <div class="tab-container">
+                <div class="tab-bar">
+                    <button class="tab-btn active" onclick="openTab(event, 'tab-1')">1. Yellow Book Appraisal</button>
+                    <button class="tab-btn" onclick="openTab(event, 'tab-2')">2. Title & Mineral Rights</button>
+                    <button class="tab-btn" onclick="openTab(event, 'tab-3')">3. URA & Willing Seller</button>
+                    <button class="tab-btn" onclick="openTab(event, 'tab-4')">4. GIS & Management Plan</button>
+                    <button class="tab-btn" onclick="openTab(event, 'tab-5')">5. Post-Close Desk Review</button>
+                    <button class="tab-btn" onclick="openTab(event, 'tab-6')">Historical Log Stream</button>
+                </div>
+
+                <!-- Tab 1: Yellow Book Appraisal -->
+                <div id="tab-1" class="tab-pane active">
+                    <div class="section-heading">
+                        <span>UASFLA / Yellow Book Valuation Workflow</span>
+                        <a href="https://www.appraisalinstitute.org/yellow-book" target="_blank" class="ref-badge">📖 UASFLA Standards Guide ↗</a>
+                    </div>
+                    
+                    <div class="checklist-grid">
+                        <div class="checklist-card">
+                            <h4>Primary Appraisal (UASFLA) <a href="https://www.ecfr.gov/current/title-2/section-200.311" target="_blank" class="ref-badge">2 CFR §200.311 ↗</a></h4>
+                            <div class="help-box">
+                                <strong>Why this is required:</strong> Federal funds cannot pay more than Fair Market Value (FMV). Yellow Book (UASFLA) rules are stricter than commercial appraisals and require explicit identification of federal intended users, valuation date compliance, and post-storm market impact adjustments.
+                            </div>
+                            <select>
+                                <option>Pending Receipt</option>
+                                <option selected>Under Review (GMS/Appraiser)</option>
+                                <option>Approved</option>
+                                <option>Revisions Needed</option>
+                            </select>
+                        </div>
+
+                        <div class="checklist-card">
+                            <h4>Technical Review Appraisal <a href="https://www.appraisalinstitute.org/yellow-book" target="_blank" class="ref-badge">UASFLA Section C ↗</a></h4>
+                            <div class="help-box">
+                                <strong>Why this is required:</strong> Federal standards mandate an independent technical review appraiser to formally evaluate and approve or disapprove the primary appraiser's methodology before grant funds are released for purchase.
+                            </div>
+                            <select>
+                                <option>Pending Review</option>
+                                <option selected>Approved by Review Appraiser</option>
+                                <option>Disapproved</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="reference-library">
+                        <h5>💡 Onboarding Note for New Staff — Appraisal Rules</h5>
+                        <ul>
+                            <li>• <strong>12-Month Expiration:</strong> Appraisals are generally valid for 12 months. If closing is delayed, an appraisal update or recertification letter is required prior to closing.</li>
+                            <li>• <strong>Storm Event Clause:</strong> In coastal areas, appraisals must include a statement evaluating whether recent hurricanes or storm surge altered the land's value or topography.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Title & Mineral Rights -->
+                <div id="tab-2" class="tab-pane">
+                    <div class="section-heading">
+                        <span>Title Commitment, NOFI & Subsurface Mineral Rights</span>
+                        <a href="https://www.ecfr.gov/current/title-31/subtitle-A/part-34" target="_blank" class="ref-badge">📖 RESTORE Rules ↗</a>
+                    </div>
+                    <div class="checklist-grid">
+                        <div class="checklist-card">
+                            <h4>Mineral Remoteness Report <a href="https://www.irs.gov/pub/irs-drop/rr-05-18.pdf" target="_blank" class="ref-badge">Surface Mining Standard ↗</a></h4>
+                            <div class="help-box">
+                                <strong>Why this is required:</strong> If mineral rights are severed (owned by a third party), a geologist or legal report must prove that the likelihood of surface mining or disruption is "so remote as to be negligible" to protect conservation investments.
+                            </div>
+                            <select>
+                                <option>Not Required</option>
+                                <option selected>Approved by Legal (Jana)</option>
+                                <option>Under Review</option>
+                            </select>
+                        </div>
+
+                        <div class="checklist-card">
+                            <h4>Notice of Federal Interest (NOFI) <a href="https://www.ecfr.gov/current/title-2/section-200.311#p-200.311(c)" target="_blank" class="ref-badge">2 CFR §200.311(c) ↗</a></h4>
+                            <div class="help-box">
+                                <strong>Why this is required:</strong> Ensures the public's investment is protected in perpetuity. A draft NOFI containing mandatory RESTORE Council language must be reviewed by legal (`Jana`) and recorded in local land records at closing.
+                            </div>
+                            <select>
+                                <option>Draft Submitted</option>
+                                <option selected>Redlined by Legal</option>
+                                <option>Approved for Recording</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="reference-library">
+                        <h5>💡 Onboarding Note for New Staff — Title & Mineral Reviews</h5>
+                        <ul>
+                            <li>• <strong>Surface Leases:</strong> Outstanding oil/gas surface leases or pipeline easements must be reviewed by Legal to confirm they do not impair the conservation purpose.</li>
+                            <li>• <strong>NOFI Recording:</strong> Closing cannot be finalized without a commitment from the title company to record the NOFI alongside the Warranty Deed.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Tab 3: URA & Willing Seller -->
+                <div id="tab-3" class="tab-pane">
+                    <div class="section-heading">
+                        <span>Uniform Relocation Act (URA) & Voluntary Sale Verification</span>
+                        <a href="https://www.fhwa.dot.gov/real_estate/uniform_act/" target="_blank" class="ref-badge">📖 FHWA URA Portal ↗</a>
+                    </div>
+                    <div class="checklist-grid">
+                        <div class="checklist-card">
+                            <h4>Willing Seller Letter <a href="https://www.ecfr.gov/current/title-49/subtitle-A/office-of-the-secretary-of-transportation/part-24/subpart-B/section-24.101" target="_blank" class="ref-badge">49 CFR §24.101 ↗</a></h4>
+                            <div class="help-box">
+                                <strong>Why this is required:</strong> Proves the acquisition is voluntary. The letter must state that the landowner was informed of the appraised Fair Market Value and that the agency will not use eminent domain if negotiations fail.
+                            </div>
+                            <select>
+                                <option>Pending Receipt</option>
+                                <option selected>Revisions Requested (Missing FMV)</option>
+                                <option>Approved</option>
+                            </select>
+                        </div>
+
+                        <div class="checklist-card">
+                            <h4>Uniform Relocation Act (URA) Compliance <a href="https://www.fhwa.dot.gov/real_estate/uniform_act/policy_and_guidance/ypura.cfm" target="_blank" class="ref-badge">49 CFR Part 24 ↗</a></h4>
+                            <div class="help-box">
+                                <strong>Why this is required:</strong> Federal law protects residential or commercial tenants from illegal displacement. Even if the sale is on the open market and URA benefits do not apply, an explicit URA acknowledgment letter is required for the grant file.
+                            </div>
+                            <select>
+                                <option selected>Not Applicable (Open Market)</option>
+                                <option>Tenant Relocation Active</option>
+                                <option>Letter Required for File</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="reference-library">
+                        <h5>💡 Onboarding Note for New Staff — URA Requirements</h5>
+                        <ul>
+                            <li>• <strong>Open Market Exception:</strong> If property was publicly advertised for sale, eminent domain does not apply, but the Willing Seller Letter must still disclose FMV.</li>
+                            <li>• <strong>Tenant Protections:</strong> Always verify if any agricultural, hunting, or residential leases exist on the land before closing.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Tab 4: GIS & Management Plan -->
+                <div id="tab-4" class="tab-pane">
+                    <div class="section-heading">
+                        <span>Boundary Survey, GIS Spatial Files & Stewardship Plan</span>
+                        <a href="https://www.fgdc.gov/" target="_blank" class="ref-badge">📖 FGDC GIS Standards ↗</a>
+                    </div>
+                    <div class="checklist-grid">
+                        <div class="checklist-card">
+                            <h4>Boundary Survey & Canal Acreage <a href="https://www.ecfr.gov/current/title-2/section-200.311" target="_blank" class="ref-badge">Survey Specs ↗</a></h4>
+                            <div class="help-box">
+                                <strong>Why this is required:</strong> Verified by GIS specialist (`CiCi`) to confirm boundary corners, spatial shapefiles, and legal acreage (including water/canal features) match the approved grant workplan.
+                            </div>
+                            <select>
+                                <option selected>Approved by GIS (CiCi)</option>
+                                <option>Revision Underway</option>
+                            </select>
+                        </div>
+
+                        <div class="checklist-card">
+                            <h4>Conservation Management Plan <a href="https://www.ecfr.gov/current/title-31/subtitle-A/part-34" target="_blank" class="ref-badge">RESTORE Science Standard ↗</a></h4>
+                            <div class="help-box">
+                                <strong>Why this is required:</strong> Requires Program Science Lead (`Heather Young`) approval to ensure long-term ecological stewardship, invasive species control, and habitat management goals are met.
+                            </div>
+                            <select>
+                                <option selected>Approved by PSL (Heather Young)</option>
+                                <option>Under Review</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="reference-library">
+                        <h5>💡 Onboarding Note for New Staff — GIS & Science Reviews</h5>
+                        <ul>
+                            <li>• <strong>GIS Deliverables:</strong> Shapefiles or GeoJSON boundary files must be verified in GIS before post-acquisition desk review closeout.</li>
+                            <li>• <strong>Environmental Site Assessment (Phase I ESA):</strong> Checks for hazardous materials/RECs under ASTM E1527 standards.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Tab 5: Post-Close Desk Review -->
+                <div id="tab-5" class="tab-pane">
+                    <div class="section-heading">
+                        <span>Post-Closing Deliverables & Financial Desk Review</span>
+                        <a href="https://www.gsa.gov/forms-library/real-property-status-report" target="_blank" class="ref-badge">📖 SF-429 Instructions ↗</a>
+                    </div>
+                    <div class="checklist-grid">
+                        <div class="checklist-card">
+                            <h4>Recorded Deed & Recorded NOFI <a href="https://www.ecfr.gov/current/title-2/section-200.311" target="_badge" class="ref-badge">2 CFR §200.311 ↗</a></h4>
+                            <div class="help-box">
+                                <strong>Why this is required:</strong> Verifies that the warranty deed and recorded NOFI are formally entered into public county land records showing federal interest restrictions.
+                            </div>
+                            <select>
+                                <option selected>Recorded Copy Received</option>
+                                <option>Pending Recording</option>
+                            </select>
+                        </div>
+
+                        <div class="checklist-card">
+                            <h4>ASAP Drawdown Reconciliation & SF-429 <a href="https://www.gsa.gov/forms-library/real-property-status-report" target="_blank" class="ref-badge">SF-429 Form Set ↗</a></h4>
+                            <div class="help-box">
+                                <strong>Why this is required:</strong> Reconciles final settlement statement (closing costs & land purchase price) against grant disbursements in ASAP before final desk review approval.
+                            </div>
+                            <select>
+                                <option selected>Desk Review Complete</option>
+                                <option>Awaiting ASAP Drawdown</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="reference-library">
+                        <h5>💡 Onboarding Note for New Staff — Desk Review Closeout</h5>
+                        <ul>
+                            <li>• <strong>SF-429 Attachment A:</strong> Standard Form 429 must be submitted for all real property acquired with federal grant funds.</li>
+                            <li>• <strong>Improper Payment Checks:</strong> Ensures closing cost line items (title fees, legal costs, surveys) align with federal cost principles in 2 CFR 200 Subpart E.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Tab 6: Historical Log Stream -->
+                <div id="tab-6" class="tab-pane">
+                    <div class="section-heading">Chronological Notes & Review History</div>
+                    <div class="log-container" id="log-feed"></div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        const parcels = [{"sheet": "Active", "fain": "GNSSP23FL0049", "recipient": "Gulf Consortium", "title": "10-1: Spring Warrior II Acquisition", "gms": "Sheri Land", "psl": "", "start_date": "2023-05-25", "end_date": "2026-09-30", "award_amt": "621686", "prop_cost": "", "notes": "4/15/26 discussion with GC on doing due diligence on an adjacent piece of property.  A non-monetary amendment is required along with a NCTE and then an additional amendment will be done for acquisition costs later.  Relocation Act does not apply as seller already has property on the market, but still must be in the willng seller letter. Possible issue with the NEPA land use change and would need to be re-evalauted in acquisition amendment.  They can use $50,000 in funds from the first acquisition left for the #2 due diligence for now.", "close_date": "", "sf429": ""}, {"sheet": "Active", "fain": "GT3CP22TX0005", "recipient": "TCEQ", "title": "Texas Land Acquisition - Powderhorn", "gms": "Bridget Zachary", "psl": "Heather Young", "start_date": "", "end_date": "", "award_amt": "", "prop_cost": "", "notes": "", "close_date": "", "sf429": ""}, {"sheet": "Active", "fain": "GNTCP19MS0060", "recipient": "MDEQ", "title": "Strategic Land Protection, Conservation and Enhancement of Priority Gulf Coast Landscape - Swanner Tract", "gms": "Bridget Zachary", "psl": "Heather Young", "start_date": "2016-07-01", "end_date": "2032-02-28", "award_amt": "15500000", "prop_cost": "378000", "notes": "5/15/26 Appraisal and review appraisal approved and email sent. \n5/7/26 requirements for URA sent to Andy.  Waiting for review appraisal\n4/28/26 comments from Bob sent to Receipient. \n4/9/26 Mineral Report Accepted; Also on 4/9/26 email send to Andy requesting the Appraisals, on 3/31/26 email sent to Andy accepting willing seller and stating that we needed relocation act information  3/26/26 - email sent to Andy regarding receipt of the sales contract and needing the willing seller and relocation act and additional forwarded email whree the survey was accepted Jan, 2026. \n1/15 26 - Andy said on MS call this week that they are working on the donatin agreement with Keith Jarrett and that should be executed in the next couple of weeks.  Survey received and revised appraisal underway along with purchase and sale agreement.  04/08/25 meeting stated the seller executed a right of entry extension last week and was fine with the survey. They are eager to move forward and complete the process as soon as possible.\nProgress is being made to secure a contract with the appraiser to update the appraisal, and\nthe plan is to use the same appraiser who conducted the previous appraisals, as this will\nlikely be more cost-effective. Provided the updated appraisal value meets expectations, we\nwill proceed with entering into a purchase and sale agreement.  7/15/25 Survey will  need to be revised per meeting notes. \n08/26/25 Surveyor updating survey to include added acreage (man-made canals).\n\uf0b7 Next steps: Discuss with appraiser; start appraisal; draft Purchase &amp; Sale Agreement\n(PSA); send updated survey and PSA draft to seller (expects minor negotiation since\nseller is an attorney).\n\uf0b7 Timeline: Aim to complete survey in next few weeks to a month. \n9/10/25 finalizing survey and will be completing appraisal and willing seller letter", "close_date": "", "sf429": ""}, {"sheet": "ClosedDesk Review pending", "fain": "", "recipient": "Gulf Consortium", "title": "10-1: Spring Warrior Acquisition", "gms": "Sheri Land", "psl": "Heather Young", "start_date": "2023-05-25", "end_date": "2026-09-30", "award_amt": "621686", "prop_cost": "550000", "notes": "7/21/2026 - ASAP drawdown not completed yet; 2/20/26 management plan deemed adequate by HY. 2/18/26 Management plan sent to HY for review.  2/17/26 management plan received by GCERC. \n1/15/26 awaiting drawdown to conduct the desk review12/5/25 FINAL email sent approving all deliverables for post acquisition. 12/4/25 CiCi reviewed GIS and approved.  12/4/25 Email sent to Cici regarding GIS; COMPLETE : Closed 7/28/25; $442,309 was released  11/6/25 email on post acquisition docs accepted with exception to GIS files   Post acquisition recieved and reviewed 10/30/25.  All approved with the exception of the GIS files. \n\nWaiting on review appraisal.  3.95 acres of coastline. Due diligence documents received 09/09/24.  Internal meeting set for 09/24/24 to discuss due diligence.  Additional meeting 10/09/24 internally. Willing seller letter does not provide appraised value.  Appraisal needs to identify users and a statement needs to be made regarding any market or value changes or impacts due to recent storm events.  01/24/25 revised appraisal and review appraisal submitted.  Due diligence submitted is in the acquisition checklist.  Set up for adminsitrative review began 02/03/25.  Appraisal and review appraisal approved.  New checklist sent to GC 04/01/25 to show remaining items. Additional due diligence submitted on 5/27/25.  Still need eminent domain language and will be setting up a meeting with staff to review.  6/9/25 meeting with GC to discuss remaining due diligence revisions and items needed for 6/30/25 closing. Remaining due diligence sent 6/18-19/25.  Requested filled out NOFI, RESTORE funds and payment to Patty Allen (85K) be put in the settlement statement 6/20/25.", "close_date": "2025-07-28", "sf429": ""}, {"sheet": "ClosedDesk Review pending", "fain": "/", "recipient": "TCEQ", "title": "Texas Land Acquisition - Coastal  Prairie", "gms": "Bridget Zachary", "psl": "Heather Young", "start_date": "2022-09-09", "end_date": "2026-08-31", "award_amt": "24300000", "prop_cost": "6000000", "notes": "5/14/26 Closing date rescheduled for June 18th\nCLOSING SET FOR JUNE 3, 2026.\n 5/7/26 all pre-acquisition due diligence approved.  Letter sent to TP for signature email sent approving cost summary and title commitment.  \n\n5/6/26 waiting for Jana's review of the revised title commitment and TCEQ attorney title examination.# 13 and 14.\n4/9/26 Revised Appraisal and Technical Review appraisal accepted and email sent; 3/31/26 Heather reviewing easments and draft management plan 3/31/26 Email from CiCi 3/16 GIS ok. GIS 3/26/26 - NOFIs accepted by Land team/email sent; 3/16/26NOFIs were redlined by Jana and Katharine Marvin, we reacceped them by email; 3/12/26 survey is revised, the special warranty deeds are revised along with NOFIs . Sent to Jana on 3/12/26  Need to revise conservation easement  agreement and NOFI now also. per Katharine Marvin.  Also, on 3/12/26 determined to wait to reminder Heather of GIS answers to Cassie. 1/29/26 Survey, Maps and ESA acceptance letter sent. Draft NOFI and deeds sent to Jana 1/29/26. 12/4/25 email from Heather - no issues with ESA; 12/4/25 Awaiting ESA by Heather (reminder email sent for her to review); Willing Seller was submitted but revisions are needed;  Update: federal register posting is complete. Closing is now anticipated between December and February. \nPIPER issue with workplan entry; 4/14/25 Mineral Remoteness letter accepted\nTCEQ working with non-profit on land issues and TPWD who will hold title - still working on the title as of 1/15/26", "close_date": "2026-06-18", "sf429": ""}, {"sheet": "ClosedDesk Review pending", "fain": "GT3CP22TX0005", "recipient": "TCEQ", "title": "Texas Land Acquistion - Lower Laguna Madre (now Armand Bayou II", "gms": "Bridget Zachary", "psl": "Heather Young", "start_date": "2022-09-09", "end_date": "2026-08-31", "award_amt": "24300000", "prop_cost": "1500000", "notes": "7/21/26 - need Title Policy before completing desk review                                                                                                                                                                                                                                                                             CLOSED  \n5/19/26 release of funds sent\n5/14/26 just waiting on the TCEQ statement on title.  Bridget also emailed TCEQ on closing cost to be included in final amendment as currently it is leveraged funding.\n Closing set for week of June 10, 2026. 3/12/26 sent phase II ESA to Heather. 12/18/25 - Still need to send acknowledgement to TCEQ on survey. \n12/18/25 - Heather emailed TCEQ requesting they provide an update on 1/8/26 call on ESA, specifically on what Stantec found during additional testing and any recommendations they may have (reference 10/29 email from TCEQ/Jamie Youngs). Depending on what is found, we may need an email from TCEQ acknowledging the RECs and documentation of any planned/required remediation activities.  \n12/4/25 Email sent to Heather as a reminder for ESA and Survey \n11/17/25 appraisal approved by GCERC $1,840,000 fee simple estate---105.705 acres (106 acres). ESA sent to Heather on 11/6/25 and survey sent in 9/25. For the 106 acre land purchase for conservation - does not require GS amendment to add cofunding for due diligence since it will be leveraging since the due diligence will be completed before the amendment and purchase;  and amendment to workplan in PIPER is needed and Heather detailed what is needed: revise workplan. ** cancelled - Cameron County did not want to do conservation and they are moving to looking at Matagorda property and there may be an additional property connected to Armand Bayou, 106 acres on the other side of the Bayou and then both sides of the Bayou would be ownes, Steven Scharr has approved this. $1.5M. 9/15/25 - we told them that this 106 acres can be purchased, call ended with Jamie Youngs stating that she would contact the seller so that they can begin next steps.", "close_date": "2026-06-10", "sf429": ""}, {"sheet": "ClosedDesk Review complete", "fain": "GT3CP22TX0005", "recipient": "TCEQ", "title": "Texas Land Acquisition - Armand Bayou", "gms": "Bridget Zachary", "psl": "Heather Young", "start_date": "2022-09-09", "end_date": "2026-08-31", "award_amt": "24300000", "prop_cost": "3000000", "notes": "", "close_date": "2024-12-16", "sf429": ""}, {"sheet": "ClosedDesk Review complete", "fain": "GT3CP22AL0001", "recipient": "ADCNR", "title": "Magnolia South #2 Perdido River Land Conservation and Habitat Enhancement Acquisition", "gms": "Katy Baxter", "psl": "Heather Young", "start_date": "2021-12-02", "end_date": "2026-11-30", "award_amt": "26880000", "prop_cost": "", "notes": "Post acquistion docs reviewed 9/24 and Post Acquisition Desk Review Complete, $9400 improper payment assessed. COMPLETE. email to ADCNR was not sent at time \nProperty CLOSED Closing date set for July 15, 2024. Acquisition amount $2,422,948.00. SAC clearance letter releasing funds signed 6/17/2024.  Remaining funds for Acquistions:- $13,060,775", "close_date": "2024-07-15", "sf429": ""}, {"sheet": "ClosedDesk Review complete", "fain": "GNSSP23FL0050", "recipient": "Gulf Consortium", "title": "6-1: St. Joseph Bay Chipola River Sewer Improvement Program", "gms": "Sheri Land", "psl": "Kathryn Keating", "start_date": "2023-06-26", "end_date": "2027-05-01", "award_amt": "889017", "prop_cost": "", "notes": "COMPLETE and all post acquisition documents received and desk review completed\nCOI resolved...   As of 001/31/25 all deliverables were checked and put in the tracker.  Items that need to go to attorney are ready for review and will be sent to her upon internal review.  Anticipating meeting internally and sending to attorney before site visit at the end of Feb.  Amendment and release of funds under reivew 04/9/25. Amendment awarded and accepted 4/23/25.", "close_date": "pre-award", "sf429": "2026-03-19 00:00:00"}, {"sheet": "ClosedDesk Review complete", "fain": "GNSSP20FL0012", "recipient": "Gulf Consortium", "title": "17-1: Cockroach Bay Aquatic Preserve Land Acquisition and Ecosystem Restoration", "gms": "Sheri Land/Bridget Zachary", "psl": "Heather Young", "start_date": "2019-09-01", "end_date": "2028-03-31", "award_amt": "5027488", "prop_cost": "", "notes": "COMPLETE 4/6/22 was when the funds were released.\nSOW request from GC regarding plugging wells which is allowed.  Property has been acquired and reimbursed.  Remaining amount for Acquisitions :  $0", "close_date": "2022-04-06", "sf429": "2026-03-19 00:00:00"}, {"sheet": "ClosedDesk Review complete", "fain": "GT3CP22TX0005", "recipient": "TCEQ", "title": "Texas Land Acquisition - Refugio Goliad Prairie", "gms": "Bridget Zachary", "psl": "Heather Young", "start_date": "2022-09-09", "end_date": "2026-08-31", "award_amt": "24300000", "prop_cost": "", "notes": "1/15/26 close desk review - 8/14/25 drawdown of $7,600,000. 12/4/25 email sent regarding GIS. 11/24/25 Heather approved the management plan. CLOSED August 21, 2025. \n11/6/25 Reminder for review of management plan sent to HY. GIS review still needed.\nPost acquisition documents received.  As of 9/22/25, waiting for GIS review and Management Plan approval.\nAppraisal and review appraisal submitted 4/14/25.  Bid request for administrative review email sent 4/14/25. 01/14/25 Working on application. Amendment submitted 08/22/24. Amendement approved. Wanting to complete acquisition by August 2025.Adiminstrative review complete with questions.  Email sent on 04/28/25 to recipient. Appraisal accepted 5/8/25.  Mineral remoteness issuse.  Meeting held 05/15/25.  Next steps - research conservation  easements with surface leases and then regroup with Jana for recommendations with Mary. Bridget setting up a call with TCEQ and TNC and ask TNC what they have done in the past. CE draft received and comments sent 6/3/25.  Mineral remoteness and ESA approved 6/3/25. Easement, management plan and baseline under review (7/10/25) and continued displacement letter and other final items being addressed for closing. \n 8/7/25 waiting for one document from TCEQ but are moving forward with release of funds.\nClosing set for August 21, 2025.  Final due diligence under final review.", "close_date": "2025-08-21", "sf429": ""}, {"sheet": "ClosedDesk Review complete", "fain": "GNTCP19MS0060", "recipient": "MDEQ", "title": "Strategic Land Protection, Conservation  and Enhancement of Priority Gulf Coast Landscape - Karen Lee", "gms": "Bridget Zachary", "psl": "Heather Young", "start_date": "42552", "end_date": "48272", "award_amt": "15500000", "prop_cost": "", "notes": "6/4/26 need a letter for the relocation act for the file\n2/12/26 desk review complete and email sent to MDEP. 2/4/26 Final discussion and email from MDEP on adjustments.  Email saved. 1/15/26 response to MDEQ requesting clarification of whether the adjustments done before or after the drawdown or if there was a correction in a draw down within 30 days. 1/13/26 response from MDEQ was not adequate information. \n12/4/25 Waiting for response from MDEQ regarding adjustments from 12/3/25 discussion\n11/20/25 - sent an email to Valerie from land email to discuss drawdown questions; 11/5/25 Additonal clarification requested on adjustments that were charged.\n9/11/25 - Bridget emailed requesting closeout information regarding the drawdown from 9/23/24 COMPLETE\nProperty CLOSED Acquisition Amount: $370,100; Closing Date: August 30, 2024       \n9/17/25 management plan approved", "close_date": "45534", "sf429": ""}, {"sheet": "Not moving forward", "fain": "PROJECT NOT HAPPENING", "recipient": "MDEQ", "title": "Coastal Headwaters Land Conservation Program - Weyerhauser", "gms": "Bridget Zachary", "psl": "Heather Young", "start_date": "", "end_date": "", "award_amt": "", "prop_cost": "PROJECT NOT HAPPENING \nSurvey Requirement is waived. Waiting to see if RESTORE funds are needed. Email received stating that they will not be needing the funds. GCERC returned application.", "notes": "", "close_date": "", "sf429": ""}];
+
+        let selectedIdx = 0;
+
+        function renderList(items) {
+            const listEl = document.getElementById('parcel-list');
+            listEl.innerHTML = '';
+
+            items.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = `parcel-item ${idx === selectedIdx ? 'selected' : ''}`;
+                div.onclick = () => selectParcel(idx);
+
+                let badgeClass = 'badge-active';
+                if (item.sheet.includes('pending')) badgeClass = 'badge-pending';
+                if (item.sheet.includes('complete')) badgeClass = 'badge-complete';
+                if (item.sheet.includes('Not moving')) badgeClass = 'badge-cancelled';
+
+                div.innerHTML = `
+                    <div class="fain">${item.fain || 'FAIN PENDING'}</div>
+                    <div class="title">${item.title || 'Untitled Acquisition'}</div>
+                    <div class="sub-info">
+                        <span class="recipient">${item.recipient}</span>
+                        <span class="badge ${badgeClass}">${item.sheet.replace('ClosedDesk Review', 'Desk Review')}</span>
+                    </div>
+                `;
+                listEl.appendChild(div);
+            });
+        }
+
+        function selectParcel(idx) {
+            selectedIdx = idx;
+            renderList(parcels);
+
+            const p = parcels[idx];
+            document.getElementById('det-title').innerText = p.title || 'Untitled Tract';
+            document.getElementById('det-fain').innerText = p.fain ? `FAIN: ${p.fain}` : 'FAIN: Unassigned / Pending';
+            document.getElementById('det-recipient').innerText = p.recipient || 'N/A';
+            document.getElementById('det-staff').innerText = `${p.gms || 'GMS N/A'} / ${p.psl || 'PSL N/A'}`;
+            document.getElementById('det-cost').innerText = p.prop_cost ? `$${Number(p.prop_cost).toLocaleString()}` : 'N/A';
+            document.getElementById('det-award').innerText = (p.award_amt ? `$${Number(p.award_amt).toLocaleString()}` : 'N/A') + (p.close_date ? ` (Close: ${p.close_date})` : '');
+
+            let badgeClass = 'badge-active';
+            if (p.sheet.includes('pending')) badgeClass = 'badge-pending';
+            if (p.sheet.includes('complete')) badgeClass = 'badge-complete';
+            if (p.sheet.includes('Not moving')) badgeClass = 'badge-cancelled';
+
+            document.getElementById('det-badge').innerHTML = `<span class="badge ${badgeClass}" style="font-size:0.85rem; padding: 6px 12px;">${p.sheet}</span>`;
+
+            // Log Feed
+            const logEl = document.getElementById('log-feed');
+            if (p.notes && p.notes.trim() !== '') {
+                logEl.innerHTML = `
+                    <div class="log-entry">
+                        <div class="time">Historical Log Stream (Excel Notes Entry)</div>
+                        <div class="text">${p.notes}</div>
+                    </div>
+                `;
+            } else {
+                logEl.innerHTML = `<div style="color: #64748b; font-size: 0.85rem;">No historical text notes recorded for this tract.</div>`;
+            }
+        }
+
+        function openTab(evt, tabId) {
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        function filterParcels() {
+            const q = document.getElementById('search-box').value.toLowerCase();
+            const filtered = parcels.filter(p => 
+                (p.title && p.title.toLowerCase().includes(q)) ||
+                (p.fain && p.fain.toLowerCase().includes(q)) ||
+                (p.recipient && p.recipient.toLowerCase().includes(q))
+            );
+            renderList(filtered);
+        }
+
+        window.onload = () => {
+            renderList(parcels);
+            if (parcels.length > 0) selectParcel(0);
+        };
+    </script>
+</body>
+</html>
